@@ -1,59 +1,8 @@
 # 1- Define AST nodes
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Literal, Union
-
+from .glite_ast import *
 EdgeDirection = Literal["left", "right", "undirected"]
-
-@dataclass
-class ElementFiller:
-    variable: Optional[str] = None
-    _type: Optional[str] = None
-    properties: Dict[str, str] = field(default_factory=dict)
-
-@dataclass
-class NodePattern:
-    filler: ElementFiller
-
-@dataclass
-class EdgePattern:
-    filler: ElementFiller
-    direction: EdgeDirection = "undirected"
-
-@dataclass
-class PathPatternExpr:
-    nodes: List[NodePattern]
-    edges: List[EdgePattern]
-
-@dataclass
-class ComparisonExpr:
-    variable: str
-    attribute: str
-    operator: str
-    value: Union[str, int, float]  # Can extend with ValueExpr later
-
-@dataclass
-class FunctionExpr:
-    name: str
-    args: List[str]
-    alias: Optional[str] = None
-
-@dataclass
-class ReturnItem:
-    variable: str
-    attribute: Optional[str] = None  # None for whole node/edge
-    alias: Optional[str] = None
-
-@dataclass
-class ReturnClause:
-    items: List[ReturnItem]
-    distinct: bool = False
-
-@dataclass
-class PathPattern:
-    expr: PathPatternExpr
-    where: Optional[ComparisonExpr] = None
-    return_clause: Optional[ReturnClause] = None
-
 
 # 2- Parser
 class GLiteParser:
@@ -88,11 +37,11 @@ class GLiteParser:
     # --- Parsing methods ---
     def parse_element_filler(self):
         var = self.match("IDENT")
-        _type = None
+        type = None
         props = {}
 
         if self.match("COLON"):
-            _type = self.expect("IDENT")
+            type = self.expect("IDENT")
 
         if self.match("LBRACE"):
             while True:
@@ -112,7 +61,7 @@ class GLiteParser:
                     break
             self.expect("RBRACE")
 
-        return ElementFiller(var, _type, props)
+        return ElementFiller(var, type, props)
 
     def parse_node_pattern(self):
         self.expect("LPAREN")
